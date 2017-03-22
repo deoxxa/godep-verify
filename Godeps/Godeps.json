@@ -1,0 +1,16 @@
+{
+	"ImportPath": "fknsrs.biz/p/godep-verify",
+	"GoVersion": "go1.8",
+	"GodepVersion": "v79",
+	"Deps": [
+		{
+			"ImportPath": "github.com/pmezard/go-difflib/difflib",
+			"Comment": "v1.0.0",
+			"Rev": "792786c7400a136282c1664665ae0a8db921c6c2"
+		},
+		{
+			"ImportPath": "golang.org/x/tools/go/vcs",
+			"Rev": "81dff79736a5dfbfa04fdfe7bebdabcd0fd6456a"
+		}
+	]
+}
