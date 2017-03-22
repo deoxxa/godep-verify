@@ -22,6 +22,7 @@ var (
 	vendorPath   = flag.String("vendor", "vendor", "Vendor directory holding dependencies.")
 	cachePath    = flag.String("cache", os.TempDir(), "Temporary directory for checking out sources.")
 	verbose      = flag.Bool("v", false, "Turn on verbose logging.")
+	fix          = flag.Bool("fix", false, "Automatically restore files with differences from source.")
 )
 
 type godepManifest struct {
@@ -190,9 +191,13 @@ func main() {
 			sum2 := h2.Sum(nil)
 
 			if !bytes.Equal(sum1, sum2) {
-				failed = true
+				if !failed {
+					fmt.Printf("\n")
+				}
 
-				fmt.Printf("\n[!] file %s has changes\n", filepath.Join(name, relativePath))
+				fmt.Printf("[!] File %s has changes\n", filepath.Join(name, relativePath))
+
+				failed = true
 
 				diff, err := difflib.GetUnifiedDiffString(difflib.UnifiedDiff{
 					A:        difflib.SplitLines(string(d1)),
@@ -204,8 +209,20 @@ func main() {
 				})
 
 				if err == nil {
-					fmt.Print(diff)
+					for _, l := range strings.Split(strings.TrimSpace(diff), "\n") {
+						fmt.Printf("> %s\n", l)
+					}
 				}
+
+				if *fix {
+					fmt.Printf("[+] Restoring %s from source\n", filepath.Join(name, relativePath))
+
+					if err := ioutil.WriteFile(filepath.Join(vendorPath, relativePath), d2, 0644); err != nil {
+						panic(err)
+					}
+				}
+
+				fmt.Printf("\n")
 			}
 
 			return nil
@@ -214,7 +231,7 @@ func main() {
 		}
 	}
 
-	if failed {
+	if failed && !*fix {
 		fmt.Printf("# Failures were detected\n")
 		os.Exit(1)
 	} else {
